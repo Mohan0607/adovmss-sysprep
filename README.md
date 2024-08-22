@@ -1,0 +1,1 @@
+# adovmss-sysprep
