@@ -20,21 +20,29 @@ if (-Not (Test-Path -Path $nodeInstallerPath)) {
     Exit 1
 }
 
-# Install Node.js
+# Install Node.js with logging
+$installLogPath = "$tempDir\nodejs_install.log"
 Write-Output "Installing Node.js..."
-Start-Process msiexec.exe -ArgumentList "/I", "`"$nodeInstallerPath`"", "/quiet", "/norestart" -Wait
+Start-Process msiexec.exe -ArgumentList "/I", "`"$nodeInstallerPath`"", "/quiet", "/norestart", "/log", "`"$installLogPath`"" -Wait
 
 # Verify installation
-Write-Output "Verifying Node.js installation..."
-$nodeVersionInstalled = node -v
-$npmVersionInstalled = npm -v
+$nodePath = "C:\Program Files\nodejs\node.exe"
+$npmPath = "C:\Program Files\nodejs\npm.cmd"
 
-if ($nodeVersionInstalled -eq $null -or $npmVersionInstalled -eq $null) {
-    Write-Output "Node.js installation failed. Exiting."
-    Exit 1
-} else {
+if (Test-Path -Path $nodePath) {
+    $nodeVersionInstalled = & $nodePath -v
     Write-Output "Node.js version: $nodeVersionInstalled"
+} else {
+    Write-Output "Node.js installation failed. Check the installation log at $installLogPath"
+    Exit 1
+}
+
+if (Test-Path -Path $npmPath) {
+    $npmVersionInstalled = & $npmPath -v
     Write-Output "npm version: $npmVersionInstalled"
+} else {
+    Write-Output "npm installation failed. Check the installation log at $installLogPath"
+    Exit 1
 }
 
 # Clean up
